@@ -1,0 +1,8 @@
+?start: expr
+?expr: term
+     | expr "+" term   -> add
+?term: NUMBER          -> number
+
+%import common.NUMBER
+%import common.WS_INLINE
+%ignore WS_INLINE
