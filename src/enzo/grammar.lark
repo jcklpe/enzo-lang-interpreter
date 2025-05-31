@@ -1,7 +1,22 @@
-?start: expr
+?start: stmt+
+
+?stmt: assign_stmt
+     | expr                      -> expr_stmt
+
+?assign_stmt: NAME ":"  expr     -> bind
+            | NAME "<:" expr     -> rebind
+            | expr ":>" NAME     -> rebind_lr
+
+# ── expressions ────────────────────────────────────
 ?expr: term
-     | expr "+" term   -> add
-?term: NUMBER          -> number
+     | expr "+" term             -> add
+     | expr "-" term             -> sub        # ← NEW
+
+?term: NUMBER                    -> number
+     | NAME                      -> var
+     | "(" expr ")"              -> paren
+
+NAME: /\$[a-zA-Z0-9_-]+/
 
 %import common.NUMBER
 %import common.WS_INLINE

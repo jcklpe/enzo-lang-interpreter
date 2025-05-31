@@ -1,7 +1,11 @@
 from enzo.parser import parse
-from enzo.exec    import eval_ast
+from enzo.exec   import eval_ast
+
+# built-in helper
+def say(val): print(val)
 
 def main() -> None:
+    print("enzo repl — ctrl-D to exit")
     while True:
         try:
             line = input("enzo> ")
@@ -11,6 +15,8 @@ def main() -> None:
             continue
         try:
             ast = parse(line)
-            print(eval_ast(ast))
+            out = eval_ast(ast)
+            if out is not None:
+                print(out)
         except Exception as e:
             print("error:", e)
