@@ -4,8 +4,9 @@ def eval_ast(node):
     typ, *rest = node
 
     # ── literals & lookup ──────────────────────────
-    if typ == "num":    return rest[0]
-    if typ == "list":   return [eval_ast(x) for x in rest[0]]
+    if typ == "num":  return rest[0]
+    if typ == "str":  return rest[0]
+    if typ == "list": return [eval_ast(x) for x in rest[0]]
     if typ == "var":
         name = rest[0]
         if name not in _env:
@@ -20,11 +21,14 @@ def eval_ast(node):
 
     # ── list indexing (1-based) ────────────────────
     if typ == "index":
-        base, idx1 = rest
-        seq = eval_ast(base)
+        base_ast, idx_ast = rest
+        seq = eval_ast(base_ast)
+        idx_val = eval_ast(idx_ast)
         if not isinstance(seq, list):
             raise TypeError("indexing applies to lists")
-        i = idx1 - 1   # convert to 0-based
+        if not isinstance(idx_val, int):
+            raise TypeError("index must be a number")
+        i = idx_val - 1                # convert to 0-based
         if i < 0 or i >= len(seq):
             raise IndexError("list index out of range")
         return seq[i]
@@ -34,14 +38,16 @@ def eval_ast(node):
         name, expr = rest
         if name in _env:
             raise NameError(f"{name} already defined")
-        _env[name] = eval_ast(expr); return _env[name]
+        _env[name] = eval_ast(expr)
+        return _env[name]
 
     if typ == "rebind":
         name, expr = rest
         if name not in _env:
             raise NameError(f"{name} undefined")
-        _env[name] = eval_ast(expr); return _env[name]
+        _env[name] = eval_ast(expr)
+        return _env[name]
 
-    if typ == "expr":   return eval_ast(rest[0])
+    if typ == "expr": return eval_ast(rest[0])
 
     raise ValueError(f"unknown node: {typ}")

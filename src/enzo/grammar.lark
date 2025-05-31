@@ -3,12 +3,10 @@
 ?stmt: assign_stmt
      | expr                       -> expr_stmt
 
-# ── assignment ─────────────────────────────────────
-?assign_stmt: NAME ":"  expr      -> bind
+?assign_stmt: NAME ":" expr       -> bind
             | NAME "<:" expr      -> rebind
             | expr ":>" NAME      -> rebind_lr
 
-# ── full precedence ────────────────────────────────
 ?expr: sum
 
 ?sum: product
@@ -19,22 +17,22 @@
         | product "*" postfix     -> mul
         | product "/" postfix     -> div
 
-# postfix handles one or more “.INT” selectors
-?postfix: primary ("." INT)+      -> index
-        | primary
+?postfix: primary (DOTINT|DOTVAR)*       -> index_chain
 
-# ── primary atoms ──────────────────────────────────
 ?primary: list
         | NUMBER                  -> number
+        | STRING                  -> string
         | NAME                    -> var
         | "(" expr ")"            -> paren
 
 list: "[" [expr ("," expr)*] "]"  -> list
 
-# identifiers (Option A: must start $, hyphens allowed)
 NAME: /\$[a-zA-Z0-9_-]+/
-INT:  /[1-9][0-9]*/               // 1-based positive integer
+DOTINT.5: /\.[1-9][0-9]*/
+DOTVAR.6: /\.\$[a-zA-Z0-9_-]+/
+INT: /[1-9][0-9]*/
 
 %import common.NUMBER
+%import common.ESCAPED_STRING     -> STRING
 %import common.WS_INLINE
 %ignore WS_INLINE
