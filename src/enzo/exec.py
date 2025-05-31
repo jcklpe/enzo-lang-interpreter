@@ -14,7 +14,11 @@ def eval_ast(node):
     if typ == "add":
         a, b = rest;                return eval_ast(a) + eval_ast(b)
     if typ == "sub":
-        a, b = rest;                return eval_ast(a) - eval_ast(b)   # ← NEW
+        a, b = rest;                return eval_ast(a) - eval_ast(b)
+    if typ == "mul":                # NEW
+        a, b = rest;                return eval_ast(a) * eval_ast(b)
+    if typ == "div":                # NEW
+        a, b = rest;                return eval_ast(a) / eval_ast(b)
 
     # bind / rebind
     if typ == "bind":
@@ -27,6 +31,7 @@ def eval_ast(node):
         if name not in _env:        raise NameError(f"{name} undefined")
         _env[name] = eval_ast(expr); return _env[name]
 
+    # expression statement
     if typ == "expr":               return eval_ast(rest[0])
 
     raise ValueError(f"unknown node: {typ}")

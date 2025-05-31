@@ -14,7 +14,9 @@ class AST(Transformer):
 
     # arithmetic
     def add(self, vals):            return ("add", *vals)
-    def sub(self, vals):            return ("sub", *vals)   # ← NEW
+    def sub(self, vals):            return ("sub", *vals)
+    def mul(self, vals):            return ("mul", *vals)   # NEW
+    def div(self, vals):            return ("div", *vals)   # NEW
     def paren(self, vals):          return vals[0]
 
     # statements
