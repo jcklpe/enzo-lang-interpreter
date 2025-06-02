@@ -3,10 +3,13 @@
 ?stmt: assign_stmt
      | expr                       -> expr_stmt
 
-?assign_stmt: NAME ":"  expr      -> bind
-            | NAME "<:" expr      -> rebind
-            | expr ":>" NAME      -> rebind_lr
+# ── assignment ─────────────────────────────────────
+?assign_stmt: NAME ":" expr            -> bind
+            | NAME "<:" expr           -> rebind
+            | expr "<:" expr           -> prop_rebind
+            | expr ":>" NAME           -> rebind_lr
 
+# ── full precedence ────────────────────────────────
 ?expr: sum
 
 ?sum: product
@@ -17,28 +20,32 @@
         | product "*" postfix     -> mul
         | product "/" postfix     -> div
 
-# selector chain after an atom
-?postfix: primary (DOTINT | DOTVAR | DOTPROP)*   -> index_chain
+# ── postfix (handles indexing and property‐access) ──
+?postfix: primary (DOTINT | DOTVAR | DOTPROP)*       -> index_chain
 
-# ─────────────────── atoms ───────────────────────
-?primary: table
-        | list
+?primary: list
+        | table
         | NUMBER                  -> number
         | STRING                  -> string
         | NAME                    -> var
         | "(" expr ")"            -> paren
 
-list : "[" [expr ("," expr)*] "]"                 -> list
-kvpair: NAME ":" expr                             -> kvpair
-table : "{" [kvpair ("," kvpair)*] "}"            -> table
+# ── list literal ───────────────────────────────────
+list: "[" [expr ("," expr)*] "]"  -> list
 
-# ─────────────────── tokens ──────────────────────
-NAME       : /\$[a-zA-Z0-9_-]+/
-DOTINT  .5 : /\.[1-9][0-9]*/                      // .3  .12 …
-DOTVAR  .6 : /\.\$[a-zA-Z0-9_-]+/                 // .$i
-DOTPROP .6 : /\.[a-zA-Z][a-zA-Z0-9_-]*/           // .name
+# ── table literal ──────────────────────────────────
+table: "{" [kvpair ("," kvpair)*] "}"  -> table
+kvpair: KEY ":" expr
+
+# ── tokens ─────────────────────────────────────────
+NAME:  /\$[a-zA-Z0-9_-]+/            // $foo, $bar_123, etc.
+KEY:   /\$[a-zA-Z0-9_-]+/            // same pattern, used inside tables
+
+DOTINT.5:   /\.[1-9][0-9]*/           // “.1”, “.42” (1‐based numeric indexing)
+DOTVAR.6:   /\.[$][a-zA-Z0-9_-]+/      // “.$foo”
+DOTPROP.7:  /\.[a-zA-Z][a-zA-Z0-9_-]*/ // “.foo”  (property access)
 
 %import common.NUMBER
-%import common.ESCAPED_STRING      -> STRING
+%import common.ESCAPED_STRING     -> STRING
 %import common.WS_INLINE
 %ignore WS_INLINE
