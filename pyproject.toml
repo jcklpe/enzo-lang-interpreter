@@ -11,6 +11,8 @@ packages = [
 python = "^3.10"
 lark = "^1.2.2"
 prompt-toolkit = "^3.0.51"
+notebook = "^7.4.3"
+ipykernel = "^6.29.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
